@@ -2,6 +2,7 @@ package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.Project;
 import ru.denisov.itcompany.exception.RepositoryException;
+import ru.denisov.itcompany.singleton.connection.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -40,7 +41,11 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(ProjectRepository.class.getName());
-    private Connection connection;
+    private final ConnectionManager connectionManager;
+
+    public ProjectRepository(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
+    }
 
     private static void prepareInsertStatement(Project entity, PreparedStatement statement) throws SQLException {
         statement.setString(1, entity.name());
@@ -49,11 +54,12 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
 
     @Override
     public void insert(Project entity) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             prepareInsertStatement(entity, statement);
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления проекта: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -64,13 +70,14 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
     public List<Project> findAll() throws RepositoryException {
         List<Project> projects = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 projects.add(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска всех проектов: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -83,7 +90,8 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
     public Optional<Project> findById(Long id) throws RepositoryException {
         Optional<Project> project = Optional.empty();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
             ResultSet resultSet = statement.executeQuery();
@@ -91,7 +99,7 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
             if (resultSet.next()) {
                 project = Optional.of(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска проекта по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -102,12 +110,13 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
 
     @Override
     public void update(Long id, Project updatedEntity) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(3, id);
             prepareInsertStatement(updatedEntity, statement);
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка изменения проекта по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -116,11 +125,12 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
 
     @Override
     public void delete(Long id) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка удаления проекта по ID: " + e.getMessage());
 
             throw new RepositoryException(e);

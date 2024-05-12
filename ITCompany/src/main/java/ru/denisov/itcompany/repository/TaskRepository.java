@@ -2,6 +2,7 @@ package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.Task;
 import ru.denisov.itcompany.exception.RepositoryException;
+import ru.denisov.itcompany.singleton.connection.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -39,18 +40,23 @@ public class TaskRepository implements BaseRepository<Long, Task> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(TaskRepository.class.getName());
-    private Connection connection;
+    private final ConnectionManager connectionManager;
+
+    public TaskRepository(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
+    }
 
     @Override
     public void insert(Task entity) {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             statement.setLong(1, entity.projectId());
             statement.setString(2, entity.name());
             statement.setDate(3, Date.valueOf(entity.startDate()));
             statement.setDate(4, Date.valueOf(entity.endDate()));
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления задачи: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -61,13 +67,14 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     public List<Task> findAll() {
         List<Task> tasks = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 tasks.add(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска всех задач: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -80,7 +87,8 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     public Optional<Task> findById(Long id) {
         Optional<Task> task = Optional.empty();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
             ResultSet resultSet = statement.executeQuery();
@@ -88,7 +96,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
             if (resultSet.next()) {
                 task = Optional.of(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска задачи по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -99,14 +107,15 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
     @Override
     public void update(Long id, Task updatedEntity) {
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(4, id);
             statement.setString(1, updatedEntity.name());
             statement.setDate(2, Date.valueOf(updatedEntity.startDate()));
             statement.setDate(3, Date.valueOf(updatedEntity.endDate()));
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка обновления задачи по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -115,11 +124,12 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
     @Override
     public void delete(Long id) {
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка удаления задачи по ID: " + e.getMessage());
 
             throw new RepositoryException(e);

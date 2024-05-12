@@ -3,6 +3,7 @@ package ru.denisov.itcompany.repository;
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.entity.Role;
 import ru.denisov.itcompany.exception.RepositoryException;
+import ru.denisov.itcompany.singleton.connection.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -42,11 +43,16 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(EmployeeRepository.class.getName());
-    private Connection connection;
+    private final ConnectionManager connectionManager;
+
+    public EmployeeRepository(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
+    }
 
     @Override
     public void insert(Employee entity) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             statement.setLong(1, entity.projectId());
             statement.setLong(2, entity.positionId());
             statement.setString(3, entity.name());
@@ -57,7 +63,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
             statement.setString(8, entity.role().toString());
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления сотрудника: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -68,13 +74,14 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     public List<Employee> findAll() throws RepositoryException {
         List<Employee> employees = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 employees.add(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска всех сотрудников: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -87,7 +94,8 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     public Optional<Employee> findById(Long id) throws RepositoryException {
         Optional<Employee> employee = Optional.empty();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
             ResultSet resultSet = statement.executeQuery();
@@ -95,7 +103,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
             if (resultSet.next()) {
                 employee = Optional.of(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска сотрудника по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -106,7 +114,8 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
 
     @Override
     public void update(Long id, Employee updatedEntity) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(6, id);
             statement.setLong(1, updatedEntity.projectId());
             statement.setLong(2, updatedEntity.positionId());
@@ -115,7 +124,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
             statement.setString(5, updatedEntity.role().toString());
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка изменения сотрудника по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -124,11 +133,12 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
 
     @Override
     public void delete(Long id) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка удаления сотрудника по ID: " + e.getMessage());
 
             throw new RepositoryException(e);

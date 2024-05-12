@@ -2,6 +2,7 @@ package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.Position;
 import ru.denisov.itcompany.exception.RepositoryException;
+import ru.denisov.itcompany.singleton.connection.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,15 +40,20 @@ public class PositionRepository implements BaseRepository<Long, Position> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(PositionRepository.class.getName());
-    private Connection connection;
+    private final ConnectionManager connectionManager;
+
+    public PositionRepository(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
+    }
 
     @Override
     public void insert(Position entity) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             statement.setString(1, entity.name());
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления должности: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -58,13 +64,14 @@ public class PositionRepository implements BaseRepository<Long, Position> {
     public List<Position> findAll() throws RepositoryException {
         List<Position> positions = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 positions.add(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска всех должностей: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -77,7 +84,8 @@ public class PositionRepository implements BaseRepository<Long, Position> {
     public Optional<Position> findById(Long id) throws RepositoryException {
         Optional<Position> position = Optional.empty();
 
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
             ResultSet resultSet = statement.executeQuery();
@@ -85,7 +93,7 @@ public class PositionRepository implements BaseRepository<Long, Position> {
             if (resultSet.next()) {
                 position = Optional.of(mapResultSetToEntity(resultSet));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска должности по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -96,12 +104,13 @@ public class PositionRepository implements BaseRepository<Long, Position> {
 
     @Override
     public void update(Long id, Position updatedEntity) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(2, id);
             statement.setString(1, updatedEntity.name());
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка изменения должности по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
@@ -110,11 +119,12 @@ public class PositionRepository implements BaseRepository<Long, Position> {
 
     @Override
     public void delete(Long id) throws RepositoryException {
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
+        try (Connection connection = connectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка удаления должности по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
