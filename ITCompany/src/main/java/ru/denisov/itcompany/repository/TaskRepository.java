@@ -1,24 +1,44 @@
 package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.Task;
+import ru.denisov.itcompany.exception.RepositoryException;
 
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TaskRepository implements BaseRepository<Long, Task> {
     private static final String TABLE_NAME = "task";
-    private static final String INSERT_TEMPLATE = "INSERT INTO " + TABLE_NAME + "(project_id, name, start_date, end_date) VALUES(?, ?, ?, ?)";
-    private static final String SELECT_ALL_TEMPLATE = "SELECT * FROM " + TABLE_NAME;
-    private static final String SELECT_BY_ID_TEMPLATE = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
-    private static final String UPDATE_TEMPLATE = "UPDATE " + TABLE_NAME + " SET name = ?, start_date = ?, end_date = ? WHERE id = ?";
-    private static final String DELETE_TEMPLATE = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
 
+    private static final String INSERT_TEMPLATE =
+            "INSERT INTO " + TABLE_NAME +
+                    "(project_id, name, start_date, end_date) " +
+                    "VALUES(?, ?, ?, ?)";
+
+    private static final String SELECT_ALL_TEMPLATE =
+            "SELECT id, project_id, name, start_date, end_date " +
+                    "FROM " + TABLE_NAME;
+
+    private static final String SELECT_BY_ID_TEMPLATE =
+            "SELECT * FROM " + TABLE_NAME +
+                    " WHERE id = ?";
+
+    private static final String UPDATE_TEMPLATE =
+            "UPDATE " + TABLE_NAME +
+                    " SET name = ?, start_date = ?, end_date = ? WHERE id = ?";
+
+    private static final String DELETE_TEMPLATE =
+            "DELETE FROM " + TABLE_NAME +
+                    " WHERE id = ?";
+
+    private static final Logger LOGGER = Logger.getLogger(TaskRepository.class.getName());
     private Connection connection;
 
     @Override
@@ -31,13 +51,15 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.log(Level.SEVERE, "Ошибка добавления задачи: " + e.getMessage());
+
+            throw new RepositoryException(e);
         }
     }
 
     @Override
     public List<Task> findAll() {
-        List<Task> tasks = new LinkedList<>();
+        List<Task> tasks = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
@@ -46,7 +68,9 @@ public class TaskRepository implements BaseRepository<Long, Task> {
                 tasks.add(mapResultSetToEntity(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.log(Level.SEVERE, "Ошибка поиска всех задач: " + e.getMessage());
+
+            throw new RepositoryException(e);
         }
 
         return tasks;
@@ -65,7 +89,9 @@ public class TaskRepository implements BaseRepository<Long, Task> {
                 task = Optional.of(mapResultSetToEntity(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.log(Level.SEVERE, "Ошибка поиска задачи по ID: " + e.getMessage());
+
+            throw new RepositoryException(e);
         }
 
         return task;
@@ -81,7 +107,9 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.log(Level.SEVERE, "Ошибка обновления задачи по ID: " + e.getMessage());
+
+            throw new RepositoryException(e);
         }
     }
 
@@ -92,7 +120,9 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.log(Level.SEVERE, "Ошибка удаления задачи по ID: " + e.getMessage());
+
+            throw new RepositoryException(e);
         }
     }
 
