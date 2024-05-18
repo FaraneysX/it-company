@@ -49,6 +49,8 @@ public class ConnectionGetter {
                 pool.add(proxyConnection);
             } catch (SQLException | RuntimeException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage());
+
+                throw new RuntimeException(e);
             }
         }
     }
