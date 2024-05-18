@@ -2,7 +2,7 @@ package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.TaskParticipation;
 import ru.denisov.itcompany.exception.RepositoryException;
-import ru.denisov.itcompany.singleton.connection.ConnectionManager;
+import ru.denisov.itcompany.processing.ConnectionGetter;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,15 +41,15 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(TaskParticipationRepository.class.getName());
-    private final ConnectionManager connectionManager;
+    private final ConnectionGetter connectionGetter;
 
-    public TaskParticipationRepository(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public TaskParticipationRepository(ConnectionGetter connectionGetter) {
+        this.connectionGetter = connectionGetter;
     }
 
     @Override
     public void insert(TaskParticipation entity) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             statement.setLong(1, entity.taskId());
             statement.setLong(2, entity.employeeId());
@@ -66,7 +66,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     public List<TaskParticipation> findAll() throws RepositoryException {
         List<TaskParticipation> taskParticipation = new ArrayList<>();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
@@ -86,7 +86,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     public Optional<TaskParticipation> findById(Long id) throws RepositoryException {
         Optional<TaskParticipation> taskParticipation = Optional.empty();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
@@ -106,7 +106,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
 
     @Override
     public void update(Long id, TaskParticipation updatedEntity) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(3, updatedEntity.id());
             statement.setLong(1, updatedEntity.taskId());
@@ -122,7 +122,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
 
     @Override
     public void delete(Long id) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 

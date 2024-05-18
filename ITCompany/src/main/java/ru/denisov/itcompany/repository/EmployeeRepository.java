@@ -3,7 +3,7 @@ package ru.denisov.itcompany.repository;
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.entity.Role;
 import ru.denisov.itcompany.exception.RepositoryException;
-import ru.denisov.itcompany.singleton.connection.ConnectionManager;
+import ru.denisov.itcompany.processing.ConnectionGetter;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -43,15 +43,15 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(EmployeeRepository.class.getName());
-    private final ConnectionManager connectionManager;
+    private final ConnectionGetter connectionGetter;
 
-    public EmployeeRepository(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public EmployeeRepository(ConnectionGetter connectionGetter) {
+        this.connectionGetter = connectionGetter;
     }
 
     @Override
     public void insert(Employee entity) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             statement.setLong(1, entity.projectId());
             statement.setLong(2, entity.positionId());
@@ -74,7 +74,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     public List<Employee> findAll() throws RepositoryException {
         List<Employee> employees = new ArrayList<>();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
@@ -94,7 +94,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     public Optional<Employee> findById(Long id) throws RepositoryException {
         Optional<Employee> employee = Optional.empty();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
@@ -114,7 +114,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
 
     @Override
     public void update(Long id, Employee updatedEntity) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(6, id);
             statement.setLong(1, updatedEntity.projectId());
@@ -133,7 +133,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
 
     @Override
     public void delete(Long id) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 

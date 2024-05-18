@@ -2,7 +2,7 @@ package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.Task;
 import ru.denisov.itcompany.exception.RepositoryException;
-import ru.denisov.itcompany.singleton.connection.ConnectionManager;
+import ru.denisov.itcompany.processing.ConnectionGetter;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -40,15 +40,15 @@ public class TaskRepository implements BaseRepository<Long, Task> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(TaskRepository.class.getName());
-    private final ConnectionManager connectionManager;
+    private final ConnectionGetter connectionGetter;
 
-    public TaskRepository(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public TaskRepository(ConnectionGetter connectionGetter) {
+        this.connectionGetter = connectionGetter;
     }
 
     @Override
     public void insert(Task entity) {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             statement.setLong(1, entity.projectId());
             statement.setString(2, entity.name());
@@ -67,7 +67,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     public List<Task> findAll() {
         List<Task> tasks = new ArrayList<>();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
@@ -87,7 +87,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     public Optional<Task> findById(Long id) {
         Optional<Task> task = Optional.empty();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
@@ -107,7 +107,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
     @Override
     public void update(Long id, Task updatedEntity) {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(4, id);
             statement.setString(1, updatedEntity.name());
@@ -124,7 +124,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
 
     @Override
     public void delete(Long id) {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 

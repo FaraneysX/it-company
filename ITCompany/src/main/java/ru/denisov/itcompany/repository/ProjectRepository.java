@@ -2,7 +2,7 @@ package ru.denisov.itcompany.repository;
 
 import ru.denisov.itcompany.entity.Project;
 import ru.denisov.itcompany.exception.RepositoryException;
-import ru.denisov.itcompany.singleton.connection.ConnectionManager;
+import ru.denisov.itcompany.processing.ConnectionGetter;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -41,10 +41,10 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
                     " WHERE id = ?";
 
     private static final Logger LOGGER = Logger.getLogger(ProjectRepository.class.getName());
-    private final ConnectionManager connectionManager;
+    private final ConnectionGetter connectionGetter;
 
-    public ProjectRepository(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public ProjectRepository(ConnectionGetter connectionGetter) {
+        this.connectionGetter = connectionGetter;
     }
 
     private static void prepareInsertStatement(Project entity, PreparedStatement statement) throws SQLException {
@@ -54,7 +54,7 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
 
     @Override
     public void insert(Project entity) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
             prepareInsertStatement(entity, statement);
 
@@ -70,7 +70,7 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
     public List<Project> findAll() throws RepositoryException {
         List<Project> projects = new ArrayList<>();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_ALL_TEMPLATE)) {
             ResultSet resultSet = statement.executeQuery();
 
@@ -90,7 +90,7 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
     public Optional<Project> findById(Long id) throws RepositoryException {
         Optional<Project> project = Optional.empty();
 
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
             statement.setLong(1, id);
 
@@ -110,7 +110,7 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
 
     @Override
     public void update(Long id, Project updatedEntity) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(3, id);
             prepareInsertStatement(updatedEntity, statement);
@@ -125,7 +125,7 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
 
     @Override
     public void delete(Long id) throws RepositoryException {
-        try (Connection connection = connectionManager.get();
+        try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(DELETE_TEMPLATE)) {
             statement.setLong(1, id);
 
