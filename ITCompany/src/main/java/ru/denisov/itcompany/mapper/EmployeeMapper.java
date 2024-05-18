@@ -5,7 +5,7 @@ import ru.denisov.itcompany.dto.employee.view.EmployeeViewDto;
 import ru.denisov.itcompany.entity.Employee;
 
 public class EmployeeMapper {
-    public Employee map(EmployeeControllerDto obj) {
+    public Employee mapToEntity(EmployeeControllerDto obj) {
         return Employee.builder()
                 .id(obj.id())
                 .projectId(obj.projectId())
@@ -19,7 +19,7 @@ public class EmployeeMapper {
                 .build();
     }
 
-    public EmployeeControllerDto map(Employee obj) {
+    public EmployeeControllerDto mapToController(Employee obj) {
         return EmployeeControllerDto.builder()
                 .id(obj.id())
                 .projectId(obj.projectId())
@@ -33,7 +33,7 @@ public class EmployeeMapper {
                 .build();
     }
 
-    public EmployeeViewDto mapController(EmployeeControllerDto obj) {
+    public EmployeeViewDto mapToView(EmployeeControllerDto obj) {
         return EmployeeViewDto.builder()
                 .id(obj.id().toString())
                 .projectId(obj.projectId().toString())

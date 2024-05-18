@@ -5,7 +5,7 @@ import ru.denisov.itcompany.dto.task.view.TaskViewDto;
 import ru.denisov.itcompany.entity.Task;
 
 public class TaskMapper {
-    public Task map(TaskControllerDto obj) {
+    public Task mapToEntity(TaskControllerDto obj) {
         return Task.builder()
                 .id(obj.id())
                 .projectId(obj.projectId())
@@ -15,7 +15,7 @@ public class TaskMapper {
                 .build();
     }
 
-    public TaskControllerDto map(Task obj) {
+    public TaskControllerDto mapToController(Task obj) {
         return TaskControllerDto.builder()
                 .id(obj.id())
                 .projectId(obj.projectId())
@@ -25,7 +25,7 @@ public class TaskMapper {
                 .build();
     }
 
-    public TaskViewDto mapController(TaskControllerDto obj) {
+    public TaskViewDto mapToView(TaskControllerDto obj) {
         return TaskViewDto.builder()
                 .id(obj.id().toString())
                 .projectId(obj.projectId().toString())
