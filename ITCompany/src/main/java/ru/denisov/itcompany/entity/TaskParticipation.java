@@ -1,9 +1,18 @@
 package ru.denisov.itcompany.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@EqualsAndHashCode
 @Builder
-public record TaskParticipation(Long id,
-                                Long taskId,
-                                Long employeeId) {
+public class TaskParticipation {
+    private Long id;
+    private Long taskId;
+    private Long employeeId;
 }

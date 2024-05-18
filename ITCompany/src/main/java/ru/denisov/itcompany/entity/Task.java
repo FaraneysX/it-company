@@ -1,13 +1,22 @@
 package ru.denisov.itcompany.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@EqualsAndHashCode
 @Builder
-public record Task(Long id,
-                   Long projectId,
-                   String name,
-                   LocalDate startDate,
-                   LocalDate endDate) {
+public class Task {
+    private Long id;
+    private Long projectId;
+    private String name;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }
