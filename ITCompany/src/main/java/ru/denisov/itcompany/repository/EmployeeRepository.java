@@ -10,9 +10,9 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +52,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     @Override
     public void insert(Employee entity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
-             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE, Statement.RETURN_GENERATED_KEYS)) {
             statement.setLong(1, entity.getProjectId());
             statement.setLong(2, entity.getPositionId());
             statement.setString(3, entity.getName());
@@ -97,8 +97,8 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     }
 
     @Override
-    public Optional<Employee> findById(Long id) throws RepositoryException {
-        Optional<Employee> employee = Optional.empty();
+    public Employee findById(Long id) throws RepositoryException {
+        Employee employee = null;
 
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
@@ -107,7 +107,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                employee = Optional.of(mapResultSetToEntity(resultSet));
+                employee = mapResultSetToEntity(resultSet);
             }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска сотрудника по ID: " + e.getMessage());
@@ -119,10 +119,10 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     }
 
     @Override
-    public void update(Long id, Employee updatedEntity) throws RepositoryException {
+    public void update(Employee updatedEntity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
-            statement.setLong(6, id);
+            statement.setLong(6, updatedEntity.getId());
             statement.setLong(1, updatedEntity.getProjectId());
             statement.setLong(2, updatedEntity.getPositionId());
             statement.setString(3, updatedEntity.getEmail());

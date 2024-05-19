@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +51,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     @Override
     public void insert(TaskParticipation entity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
-             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE, Statement.RETURN_GENERATED_KEYS)) {
             statement.setLong(1, entity.getTaskId());
             statement.setLong(2, entity.getEmployeeId());
 
@@ -89,8 +90,8 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     }
 
     @Override
-    public Optional<TaskParticipation> findById(Long id) throws RepositoryException {
-        Optional<TaskParticipation> taskParticipation = Optional.empty();
+    public TaskParticipation findById(Long id) throws RepositoryException {
+        TaskParticipation taskParticipation = null;
 
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
@@ -99,7 +100,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                taskParticipation = Optional.of(mapResultSetToEntity(resultSet));
+                taskParticipation = mapResultSetToEntity(resultSet);
             }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска участия в задаче по ID: " + e.getMessage());
@@ -111,7 +112,7 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     }
 
     @Override
-    public void update(Long id, TaskParticipation updatedEntity) throws RepositoryException {
+    public void update(TaskParticipation updatedEntity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(3, updatedEntity.getId());

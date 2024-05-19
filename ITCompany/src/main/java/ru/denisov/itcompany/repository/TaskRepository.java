@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +50,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     @Override
     public void insert(Task entity) {
         try (Connection connection = connectionGetter.get();
-             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
+             PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE, Statement.RETURN_GENERATED_KEYS)) {
             statement.setLong(1, entity.getProjectId());
             statement.setString(2, entity.getName());
             statement.setDate(3, Date.valueOf(entity.getStartDate()));
@@ -84,8 +85,8 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     }
 
     @Override
-    public Optional<Task> findById(Long id) {
-        Optional<Task> task = Optional.empty();
+    public Task findById(Long id) {
+        Task task = null;
 
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_TEMPLATE)) {
@@ -94,7 +95,7 @@ public class TaskRepository implements BaseRepository<Long, Task> {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                task = Optional.of(mapResultSetToEntity(resultSet));
+                task = mapResultSetToEntity(resultSet);
             }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска задачи по ID: " + e.getMessage());
@@ -106,10 +107,10 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     }
 
     @Override
-    public void update(Long id, Task updatedEntity) {
+    public void update(Task updatedEntity) {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
-            statement.setLong(4, id);
+            statement.setLong(4, updatedEntity.getId());
             statement.setString(1, updatedEntity.getName());
             statement.setDate(2, Date.valueOf(updatedEntity.getStartDate()));
             statement.setDate(3, Date.valueOf(updatedEntity.getEndDate()));
