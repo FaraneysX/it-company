@@ -4,11 +4,11 @@ import ru.denisov.itcompany.dto.taskparticipation.controller.TaskParticipationCo
 import ru.denisov.itcompany.mapper.TaskParticipationMapper;
 import ru.denisov.itcompany.repository.TaskParticipationRepository;
 
-public class TaskParticipation {
+public class TaskParticipationService {
     private final TaskParticipationRepository repository;
     private final TaskParticipationMapper mapper;
 
-    public TaskParticipation(TaskParticipationRepository repository, TaskParticipationMapper mapper) {
+    public TaskParticipationService(TaskParticipationRepository repository, TaskParticipationMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
