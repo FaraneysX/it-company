@@ -15,9 +15,9 @@ public class ProjectMapper {
 
     public ProjectControllerDto mapToController(Project obj) {
         return ProjectControllerDto.builder()
-                .id(obj.id())
-                .name(obj.name())
-                .startDate(obj.startDate())
+                .id(obj.getId())
+                .name(obj.getName())
+                .startDate(obj.getStartDate())
                 .build();
     }
 

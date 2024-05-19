@@ -21,15 +21,15 @@ public class EmployeeMapper {
 
     public EmployeeControllerDto mapToController(Employee obj) {
         return EmployeeControllerDto.builder()
-                .id(obj.id())
-                .projectId(obj.projectId())
-                .positionId(obj.positionId())
-                .name(obj.name())
-                .surname(obj.surname())
-                .birthDate(obj.birthDate())
-                .email(obj.email())
-                .password(obj.password())
-                .role(obj.role())
+                .id(obj.getId())
+                .projectId(obj.getProjectId())
+                .positionId(obj.getPositionId())
+                .name(obj.getName())
+                .surname(obj.getSurname())
+                .birthDate(obj.getBirthDate())
+                .email(obj.getEmail())
+                .password(obj.getPassword())
+                .role(obj.getRole())
                 .build();
     }
 

@@ -15,9 +15,9 @@ public class TaskParticipationMapper {
 
     public TaskParticipationControllerDto mapToController(TaskParticipation obj) {
         return TaskParticipationControllerDto.builder()
-                .id(obj.id())
-                .taskId(obj.taskId())
-                .employeeId(obj.employeeId())
+                .id(obj.getId())
+                .taskId(obj.getTaskId())
+                .employeeId(obj.getEmployeeId())
                 .build();
     }
 

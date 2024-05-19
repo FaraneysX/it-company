@@ -17,11 +17,11 @@ public class TaskMapper {
 
     public TaskControllerDto mapToController(Task obj) {
         return TaskControllerDto.builder()
-                .id(obj.id())
-                .projectId(obj.projectId())
-                .name(obj.name())
-                .startDate(obj.startDate())
-                .endDate(obj.endDate())
+                .id(obj.getId())
+                .projectId(obj.getProjectId())
+                .name(obj.getName())
+                .startDate(obj.getStartDate())
+                .endDate(obj.getEndDate())
                 .build();
     }
 

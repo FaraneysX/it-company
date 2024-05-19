@@ -14,8 +14,8 @@ public class PositionMapper {
 
     public PositionControllerDto mapToController(Position obj) {
         return PositionControllerDto.builder()
-                .id(obj.id())
-                .name(obj.name())
+                .id(obj.getId())
+                .name(obj.getName())
                 .build();
     }
 
