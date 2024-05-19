@@ -1,8 +1,12 @@
 package ru.denisov.itcompany.mapper;
 
 import ru.denisov.itcompany.dto.employee.controller.EmployeeControllerDto;
+import ru.denisov.itcompany.dto.employee.controller.EmployeeLoginControllerDto;
+import ru.denisov.itcompany.dto.employee.controller.EmployeeRegistrationControllerDto;
+import ru.denisov.itcompany.dto.employee.view.EmployeeLoginViewDto;
 import ru.denisov.itcompany.dto.employee.view.EmployeeViewDto;
 import ru.denisov.itcompany.entity.Employee;
+import ru.denisov.itcompany.processing.HashPassword;
 
 public class EmployeeMapper {
     public Employee mapToEntity(EmployeeControllerDto obj) {
@@ -19,6 +23,16 @@ public class EmployeeMapper {
                 .build();
     }
 
+    public Employee mapToEntity(EmployeeRegistrationControllerDto obj) {
+        return Employee.builder()
+                .name(obj.name())
+                .surname(obj.surname())
+                .birthDate(obj.birthDate())
+                .email(obj.email())
+                .password(HashPassword.hash(obj.password()))
+                .build();
+    }
+
     public EmployeeControllerDto mapToController(Employee obj) {
         return EmployeeControllerDto.builder()
                 .id(obj.getId())
@@ -30,6 +44,13 @@ public class EmployeeMapper {
                 .email(obj.getEmail())
                 .password(obj.getPassword())
                 .role(obj.getRole())
+                .build();
+    }
+
+    public EmployeeLoginControllerDto mapToLoginController(EmployeeLoginViewDto obj) {
+        return EmployeeLoginControllerDto.builder()
+                .email(obj.email())
+                .password(obj.password())
                 .build();
     }
 
