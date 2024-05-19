@@ -48,7 +48,7 @@ public class ConnectionGetter {
 
                 pool.add(proxyConnection);
             } catch (SQLException | RuntimeException e) {
-                LOGGER.log(Level.SEVERE, e.getMessage());
+                LOGGER.log(Level.SEVERE, "Ошибка при инициализации пула соединений: ", e.getMessage());
 
                 throw new RuntimeException(e);
             }
