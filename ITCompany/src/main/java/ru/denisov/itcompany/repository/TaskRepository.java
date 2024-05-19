@@ -50,10 +50,10 @@ public class TaskRepository implements BaseRepository<Long, Task> {
     public void insert(Task entity) {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
-            statement.setLong(1, entity.projectId());
-            statement.setString(2, entity.name());
-            statement.setDate(3, Date.valueOf(entity.startDate()));
-            statement.setDate(4, Date.valueOf(entity.endDate()));
+            statement.setLong(1, entity.getProjectId());
+            statement.setString(2, entity.getName());
+            statement.setDate(3, Date.valueOf(entity.getStartDate()));
+            statement.setDate(4, Date.valueOf(entity.getEndDate()));
 
             statement.executeUpdate();
         } catch (SQLException | InterruptedException e) {
@@ -110,9 +110,9 @@ public class TaskRepository implements BaseRepository<Long, Task> {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(4, id);
-            statement.setString(1, updatedEntity.name());
-            statement.setDate(2, Date.valueOf(updatedEntity.startDate()));
-            statement.setDate(3, Date.valueOf(updatedEntity.endDate()));
+            statement.setString(1, updatedEntity.getName());
+            statement.setDate(2, Date.valueOf(updatedEntity.getStartDate()));
+            statement.setDate(3, Date.valueOf(updatedEntity.getEndDate()));
 
             statement.executeUpdate();
         } catch (SQLException | InterruptedException e) {

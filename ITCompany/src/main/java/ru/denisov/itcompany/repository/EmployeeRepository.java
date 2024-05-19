@@ -53,16 +53,22 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     public void insert(Employee entity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
-            statement.setLong(1, entity.projectId());
-            statement.setLong(2, entity.positionId());
-            statement.setString(3, entity.name());
-            statement.setString(4, entity.surname());
-            statement.setDate(5, Date.valueOf(entity.birthDate()));
-            statement.setString(6, entity.email());
-            statement.setString(7, entity.password());
-            statement.setString(8, entity.role().toString());
+            statement.setLong(1, entity.getProjectId());
+            statement.setLong(2, entity.getPositionId());
+            statement.setString(3, entity.getName());
+            statement.setString(4, entity.getSurname());
+            statement.setDate(5, Date.valueOf(entity.getBirthDate()));
+            statement.setString(6, entity.getEmail());
+            statement.setString(7, entity.getPassword());
+            statement.setString(8, entity.getRole().toString());
 
             statement.executeUpdate();
+
+            var keys = statement.getGeneratedKeys();
+
+            if (keys.next()) {
+                entity.setId(keys.getLong("id"));
+            }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления сотрудника: " + e.getMessage());
 
@@ -117,11 +123,11 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(6, id);
-            statement.setLong(1, updatedEntity.projectId());
-            statement.setLong(2, updatedEntity.positionId());
-            statement.setString(3, updatedEntity.email());
-            statement.setString(4, updatedEntity.password());
-            statement.setString(5, updatedEntity.role().toString());
+            statement.setLong(1, updatedEntity.getProjectId());
+            statement.setLong(2, updatedEntity.getPositionId());
+            statement.setString(3, updatedEntity.getEmail());
+            statement.setString(4, updatedEntity.getPassword());
+            statement.setString(5, updatedEntity.getRole().toString());
 
             statement.executeUpdate();
         } catch (SQLException | InterruptedException e) {

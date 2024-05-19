@@ -48,8 +48,8 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
     }
 
     private static void prepareInsertStatement(Project entity, PreparedStatement statement) throws SQLException {
-        statement.setString(1, entity.name());
-        statement.setDate(2, Date.valueOf(entity.startDate()));
+        statement.setString(1, entity.getName());
+        statement.setDate(2, Date.valueOf(entity.getStartDate()));
     }
 
     @Override
@@ -59,6 +59,12 @@ public class ProjectRepository implements BaseRepository<Long, Project> {
             prepareInsertStatement(entity, statement);
 
             statement.executeUpdate();
+
+            var keys = statement.getGeneratedKeys();
+
+            if (keys.next()) {
+                entity.setId(keys.getLong("id"));
+            }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления проекта: " + e.getMessage());
 

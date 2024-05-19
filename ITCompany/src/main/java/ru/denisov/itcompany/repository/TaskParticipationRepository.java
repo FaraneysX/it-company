@@ -51,10 +51,16 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     public void insert(TaskParticipation entity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
-            statement.setLong(1, entity.taskId());
-            statement.setLong(2, entity.employeeId());
+            statement.setLong(1, entity.getTaskId());
+            statement.setLong(2, entity.getEmployeeId());
 
             statement.executeUpdate();
+
+            var keys = statement.getGeneratedKeys();
+
+            if (keys.next()) {
+                entity.setId(keys.getLong("id"));
+            }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления участия в задаче: " + e.getMessage());
 
@@ -108,9 +114,9 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
     public void update(Long id, TaskParticipation updatedEntity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
-            statement.setLong(3, updatedEntity.id());
-            statement.setLong(1, updatedEntity.taskId());
-            statement.setLong(2, updatedEntity.employeeId());
+            statement.setLong(3, updatedEntity.getId());
+            statement.setLong(1, updatedEntity.getTaskId());
+            statement.setLong(2, updatedEntity.getEmployeeId());
 
             statement.executeUpdate();
         } catch (SQLException | InterruptedException e) {

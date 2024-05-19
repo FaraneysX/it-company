@@ -50,9 +50,15 @@ public class PositionRepository implements BaseRepository<Long, Position> {
     public void insert(Position entity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(INSERT_TEMPLATE)) {
-            statement.setString(1, entity.name());
+            statement.setString(1, entity.getName());
 
             statement.executeUpdate();
+
+            var keys = statement.getGeneratedKeys();
+
+            if (keys.next()) {
+                entity.setId(keys.getLong("id"));
+            }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка добавления должности: " + e.getMessage());
 
@@ -107,7 +113,7 @@ public class PositionRepository implements BaseRepository<Long, Position> {
         try (Connection connection = connectionGetter.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE_TEMPLATE)) {
             statement.setLong(2, id);
-            statement.setString(1, updatedEntity.name());
+            statement.setString(1, updatedEntity.getName());
 
             statement.executeUpdate();
         } catch (SQLException | InterruptedException e) {
