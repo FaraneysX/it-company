@@ -22,13 +22,13 @@ public class ConnectionGetter {
     private static BlockingQueue<Connection> pool;
 
     static {
-        LOGGER.info("Загрузка драйвера базы данных.");
+        LOGGER.log(Level.INFO, "Загрузка драйвера базы данных.");
         loadDriver();
-        LOGGER.info("Драйвер базы данных загружен.");
+        LOGGER.log(Level.INFO, "Драйвер базы данных загружен.");
 
-        LOGGER.info("Инициализация пула соединений.");
+        LOGGER.log(Level.INFO, "Инициализация пула соединений.");
         initConnectionPool();
-        LOGGER.info("Пул соединений инициализирован.");
+        LOGGER.log(Level.INFO, "Пул соединений инициализирован.");
     }
 
     private static void initConnectionPool() {
