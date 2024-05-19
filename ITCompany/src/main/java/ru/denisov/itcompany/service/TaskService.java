@@ -5,27 +5,27 @@ import ru.denisov.itcompany.mapper.TaskMapper;
 import ru.denisov.itcompany.repository.TaskRepository;
 
 public class TaskService {
-    private final TaskRepository taskRepository;
-    private final TaskMapper taskMapper;
+    private final TaskRepository repository;
+    private final TaskMapper mapper;
 
-    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
-        this.taskRepository = taskRepository;
-        this.taskMapper = taskMapper;
+    public TaskService(TaskRepository repository, TaskMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
     }
 
     public void insert(TaskControllerDto controllerDto) {
-        taskRepository.insert(taskMapper.mapToEntity(controllerDto));
+        repository.insert(mapper.mapToEntity(controllerDto));
     }
 
     public TaskControllerDto findById(Long id) {
-        return taskMapper.mapToController(taskRepository.findById(id));
+        return mapper.mapToController(repository.findById(id));
     }
 
     public void update(TaskControllerDto controllerDto) {
-        taskRepository.update(taskMapper.mapToEntity(controllerDto));
+        repository.update(mapper.mapToEntity(controllerDto));
     }
 
     public void delete(Long id) {
-        taskRepository.delete(id);
+        repository.delete(id);
     }
 }
