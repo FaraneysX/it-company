@@ -1,5 +1,6 @@
 package ru.denisov.itcompany.repository;
 
+import ru.denisov.itcompany.dto.employee.controller.EmployeePasswordControllerDto;
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.entity.Role;
 import ru.denisov.itcompany.exception.RepositoryException;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +34,16 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
             "SELECT id, project_id, position_id, name, surname, birth_date, email, password, role " +
                     "FROM " + TABLE_NAME +
                     " WHERE id = ?";
+
+    private static final String SELECT_BY_LOGIN =
+            "SELECT id, project_id, position_id, name, surname, birth_date, password, role " +
+                    "FROM " + TABLE_NAME +
+                    "WHERE email = ?";
+
+    private static final String SELECT_PASSWORD =
+            "SELECT password " +
+                    "FROM " + TABLE_NAME +
+                    " WHERE email = ?";
 
     private static final String UPDATE_TEMPLATE =
             "UPDATE " + TABLE_NAME +
@@ -111,6 +123,50 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
             }
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка поиска сотрудника по ID: " + e.getMessage());
+
+            throw new RepositoryException(e);
+        }
+
+        return employee;
+    }
+
+    public EmployeePasswordControllerDto findPasswordByLogin(String login) throws RepositoryException {
+        String password = null;
+
+        try (Connection connection = connectionGetter.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_PASSWORD)) {
+            statement.setString(1, login);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    password = resultSet.getString("password");
+                }
+            }
+        } catch (SQLException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Ошибка поиска пароля сотрудника по логину: " + e.getMessage());
+
+            throw new RepositoryException(e);
+        }
+
+        return EmployeePasswordControllerDto.builder()
+                .password(Optional.ofNullable(password))
+                .build();
+    }
+
+    public Employee findByLogin(String login) throws RepositoryException {
+        Employee employee = null;
+
+        try (Connection connection = connectionGetter.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_LOGIN)) {
+            statement.setString(1, login);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                employee = mapResultSetToEntity(resultSet);
+            }
+        } catch (SQLException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Ошибка поиска пароля сотрудника по логину: " + e.getMessage());
 
             throw new RepositoryException(e);
         }
