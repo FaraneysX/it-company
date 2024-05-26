@@ -38,7 +38,7 @@ public class EmployeeRepository implements BaseRepository<Long, Employee> {
     private static final String SELECT_BY_LOGIN =
             "SELECT id, project_id, position_id, name, surname, birth_date, password, role " +
                     "FROM " + TABLE_NAME +
-                    "WHERE email = ?";
+                    " WHERE email = ?";
 
     private static final String SELECT_PASSWORD =
             "SELECT password " +

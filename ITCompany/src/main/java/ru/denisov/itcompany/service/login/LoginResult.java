@@ -1,7 +1,7 @@
 package ru.denisov.itcompany.service.login;
 
 import ru.denisov.itcompany.dto.employee.controller.EmployeeControllerDto;
-import ru.denisov.itcompany.processing.validator.login.LoginError;
+import ru.denisov.itcompany.processing.login.LoginError;
 
 import java.util.Optional;
 

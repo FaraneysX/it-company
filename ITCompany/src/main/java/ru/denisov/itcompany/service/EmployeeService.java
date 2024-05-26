@@ -7,7 +7,7 @@ import ru.denisov.itcompany.dto.employee.controller.EmployeeRegistrationControll
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.mapper.EmployeeMapper;
 import ru.denisov.itcompany.processing.HashPassword;
-import ru.denisov.itcompany.processing.validator.login.LoginError;
+import ru.denisov.itcompany.processing.login.LoginError;
 import ru.denisov.itcompany.repository.EmployeeRepository;
 import ru.denisov.itcompany.service.login.LoginResult;
 

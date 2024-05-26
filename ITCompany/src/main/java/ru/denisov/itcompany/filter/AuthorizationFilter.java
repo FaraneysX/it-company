@@ -26,7 +26,7 @@ public class AuthorizationFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         var uri = ((HttpServletRequest) servletRequest).getRequestURI();
 
-        if (isPublishUri(uri) || isUserLogin(servletRequest)) {
+        if (isPublishUri(uri) || isEmployeeLogin(servletRequest)) {
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
             ((HttpServletResponse) servletResponse).sendRedirect(getFullPath(LOGIN_URL));
@@ -38,7 +38,7 @@ public class AuthorizationFilter implements Filter {
                 .map(UrlPathGetter::getFullPath).anyMatch(uri::startsWith);
     }
 
-    private boolean isUserLogin(ServletRequest request) {
+    private boolean isEmployeeLogin(ServletRequest request) {
         var employee = ((HttpServletRequest) request).getSession().getAttribute(EMPLOYEE_ATTRIBUTE);
 
         return employee != null;

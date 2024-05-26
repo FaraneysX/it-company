@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 public class HashPassword {
     private static final int SALT_LENGTH = 16;
-
     private static final Logger LOGGER = Logger.getLogger(HashPassword.class.getName());
 
     public static String hash(String password) {
