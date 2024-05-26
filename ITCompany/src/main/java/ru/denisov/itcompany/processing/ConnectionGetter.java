@@ -37,10 +37,8 @@ public class ConnectionGetter {
         pool = new ArrayBlockingQueue<>(size);
 
         for (int i = 0; i < size; i++) {
-            Connection proxyConnection;
-
             try (Connection connection = open()) {
-                proxyConnection = (Connection) Proxy.newProxyInstance(
+                Connection proxyConnection = (Connection) Proxy.newProxyInstance(
                         ConnectionGetter.class.getClassLoader(),
                         new Class[]{Connection.class},
                         (proxy, method, args) -> "close".equals(method.getName()) ? pool.add((Connection) proxy) : method.invoke(connection, args)

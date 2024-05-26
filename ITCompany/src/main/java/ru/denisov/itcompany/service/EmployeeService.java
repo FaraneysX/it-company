@@ -7,7 +7,11 @@ import ru.denisov.itcompany.dto.employee.controller.EmployeeRegistrationControll
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.mapper.EmployeeMapper;
 import ru.denisov.itcompany.processing.HashPassword;
+import ru.denisov.itcompany.processing.validator.login.LoginError;
 import ru.denisov.itcompany.repository.EmployeeRepository;
+import ru.denisov.itcompany.service.login.LoginResult;
+
+import java.util.Optional;
 
 public class EmployeeService {
     private final EmployeeRepository repository;
@@ -22,20 +26,17 @@ public class EmployeeService {
         repository.insert(mapper.mapToEntity(registrationControllerDto));
     }
 
-    public boolean login(EmployeeLoginControllerDto loginControllerDto) {
+    public LoginResult login(EmployeeLoginControllerDto loginControllerDto) {
         EmployeePasswordControllerDto passwordControllerDto = repository.findPasswordByLogin(loginControllerDto.email());
 
-        if (passwordControllerDto.password().isEmpty()) {
-            return false;
-        }
-
-        if (!passwordControllerDto.password().get().equals(HashPassword.hash(loginControllerDto.password()))) {
-            return false;
+        if (passwordControllerDto.password().isEmpty() ||
+                !passwordControllerDto.password().get().equals(HashPassword.hash(loginControllerDto.password()))) {
+            return new LoginResult(LoginError.USER_NOT_FOUND, Optional.empty());
         }
 
         Employee employee = repository.findByLogin(loginControllerDto.email());
         EmployeeControllerDto controllerDto = mapper.mapToController(employee);
 
-        return true;
+        return new LoginResult(null, Optional.of(controllerDto));
     }
 }
