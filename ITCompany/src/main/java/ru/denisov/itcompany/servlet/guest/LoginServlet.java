@@ -35,7 +35,7 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getRequestDispatcher(JspPathCreator.getJspDefaultFormat(LOGIN_JSP)).forward(req, resp);
+        req.getRequestDispatcher(JspPathCreator.getJspDefaultPathFormat(LOGIN_JSP)).forward(req, resp);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class LoginServlet extends HttpServlet {
             resp.sendRedirect(getFullPath(LOGIN_URL));
         } else {
             req.setAttribute(ERROR_ATTRIBUTE, result.error());
-            req.getRequestDispatcher(JspPathCreator.getJspDefaultFormat(LOGIN_JSP)).forward(req, resp);
+            req.getRequestDispatcher(JspPathCreator.getJspDefaultPathFormat(LOGIN_JSP)).forward(req, resp);
         }
     }
 }
