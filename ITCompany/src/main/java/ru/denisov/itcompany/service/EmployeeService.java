@@ -7,10 +7,11 @@ import ru.denisov.itcompany.dto.employee.controller.EmployeeRegistrationControll
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.mapper.EmployeeMapper;
 import ru.denisov.itcompany.processing.HashPassword;
-import ru.denisov.itcompany.processing.login.LoginError;
+import ru.denisov.itcompany.processing.validator.login.LoginError;
 import ru.denisov.itcompany.repository.EmployeeRepository;
 import ru.denisov.itcompany.service.login.LoginResult;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 public class EmployeeService {
@@ -26,11 +27,11 @@ public class EmployeeService {
         repository.insert(mapper.mapToEntity(registrationControllerDto));
     }
 
-    public LoginResult login(EmployeeLoginControllerDto loginControllerDto) {
+    public LoginResult login(EmployeeLoginControllerDto loginControllerDto) throws NoSuchAlgorithmException {
         EmployeePasswordControllerDto passwordControllerDto = repository.findPasswordByLogin(loginControllerDto.email());
 
-        if (passwordControllerDto.password().isEmpty() ||
-                !passwordControllerDto.password().get().equals(HashPassword.hash(loginControllerDto.password()))) {
+        if (passwordControllerDto == null || passwordControllerDto.password().isEmpty() ||
+                !HashPassword.verify(loginControllerDto.password(), passwordControllerDto.password().orElse(""))) {
             return new LoginResult(LoginError.USER_NOT_FOUND, Optional.empty());
         }
 
@@ -38,5 +39,9 @@ public class EmployeeService {
         EmployeeControllerDto controllerDto = mapper.mapToController(employee);
 
         return new LoginResult(null, Optional.of(controllerDto));
+    }
+
+    public void update(EmployeeControllerDto controllerDto) {
+        repository.update(mapper.mapToEntity(controllerDto));
     }
 }

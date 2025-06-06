@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -13,14 +14,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Builder
+@ToString
 public class Employee {
     private Long id;
     private Long projectId;
-    private Long positionId;
     private String name;
     private String surname;
     private LocalDate birthDate;
     private String email;
     private String password;
-    private Role role;
 }

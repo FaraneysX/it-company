@@ -4,22 +4,23 @@ import ru.denisov.itcompany.dto.employee.controller.EmployeeControllerDto;
 import ru.denisov.itcompany.dto.employee.controller.EmployeeLoginControllerDto;
 import ru.denisov.itcompany.dto.employee.controller.EmployeeRegistrationControllerDto;
 import ru.denisov.itcompany.dto.employee.view.EmployeeLoginViewDto;
+import ru.denisov.itcompany.dto.employee.view.EmployeeRegistrationViewDto;
 import ru.denisov.itcompany.dto.employee.view.EmployeeViewDto;
 import ru.denisov.itcompany.entity.Employee;
 import ru.denisov.itcompany.processing.HashPassword;
+
+import java.time.LocalDate;
 
 public class EmployeeMapper {
     public Employee mapToEntity(EmployeeControllerDto obj) {
         return Employee.builder()
                 .id(obj.id())
                 .projectId(obj.projectId())
-                .positionId(obj.positionId())
                 .name(obj.name())
                 .surname(obj.surname())
                 .birthDate(obj.birthDate())
                 .email(obj.email())
                 .password(obj.password())
-                .role(obj.role())
                 .build();
     }
 
@@ -37,13 +38,11 @@ public class EmployeeMapper {
         return EmployeeControllerDto.builder()
                 .id(obj.getId())
                 .projectId(obj.getProjectId())
-                .positionId(obj.getPositionId())
                 .name(obj.getName())
                 .surname(obj.getSurname())
                 .birthDate(obj.getBirthDate())
                 .email(obj.getEmail())
                 .password(obj.getPassword())
-                .role(obj.getRole())
                 .build();
     }
 
@@ -58,13 +57,21 @@ public class EmployeeMapper {
         return EmployeeViewDto.builder()
                 .id(obj.id().toString())
                 .projectId(obj.projectId().toString())
-                .positionId(obj.positionId().toString())
                 .name(obj.name())
                 .surname(obj.surname())
                 .birthDate(obj.birthDate().toString())
                 .email(obj.email())
                 .password(obj.password())
-                .role(obj.role().toString())
+                .build();
+    }
+
+    public EmployeeRegistrationControllerDto mapToRegistrationController(EmployeeRegistrationViewDto obj) {
+        return EmployeeRegistrationControllerDto.builder()
+                .name(obj.name())
+                .surname(obj.surname())
+                .birthDate(LocalDate.parse(obj.birthDate()))
+                .email(obj.email())
+                .password(obj.password())
                 .build();
     }
 }

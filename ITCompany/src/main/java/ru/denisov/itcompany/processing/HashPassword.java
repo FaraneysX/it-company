@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HashPassword {
-    private static final int SALT_LENGTH = 16;
+    private static final int SALT_LENGTH = 8;
     private static final Logger LOGGER = Logger.getLogger(HashPassword.class.getName());
 
     public static String hash(String password) {
@@ -16,22 +16,24 @@ public class HashPassword {
             byte[] salt = generateSalt();
             byte[] hash = hashPassword(password, salt);
 
-            // Преобразование соли и хеша в строку в формате Base64
-            return Base64.getEncoder().encodeToString(salt) + ":" + Base64.getEncoder().encodeToString(hash);
+            String saltBase = Base64.getEncoder().encodeToString(salt);
+            String hashBase = Base64.getEncoder().encodeToString(hash);
+
+            return saltBase + ":" + hashBase;
         } catch (NoSuchAlgorithmException e) {
             LOGGER.log(Level.SEVERE, "Ошибка при хешировании пароля: ", e.getMessage());
 
-            return null;
+            return "";
         }
     }
 
     public static boolean verify(String password, String hash) throws NoSuchAlgorithmException {
         String[] parts = hash.split(":");
+
         byte[] salt = Base64.getDecoder().decode(parts[0]);
         byte[] storedHash = Base64.getDecoder().decode(parts[1]);
         byte[] hashToVerify = hashPassword(password, salt);
 
-        // Сравнение полученного хеша с сохраненным
         return MessageDigest.isEqual(storedHash, hashToVerify);
     }
 
@@ -47,7 +49,6 @@ public class HashPassword {
     private static byte[] hashPassword(String password, byte[] salt) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-        // Сброс состояния объекта MessageDigest и обновление его данными (солью и паролем)
         digest.reset();
         digest.update(salt);
         digest.update(password.getBytes());

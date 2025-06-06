@@ -31,10 +31,20 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
                     "FROM " + TABLE_NAME +
                     " WHERE id = ?";
 
+    private static final String SELECT_BY_EMPLOYEE_ID_TEMPLATE =
+            "SELECT id, task_id, employee_id " +
+                    "FROM " + TABLE_NAME +
+                    " WHERE employee_id = ?";
+
     private static final String UPDATE_TEMPLATE =
             "UPDATE " + TABLE_NAME +
                     " SET task_id = ?, employee_id = ? " +
                     "WHERE id = ?";
+
+    private static final String CLEAR_TASK_ID_TEMPLATE =
+            "DELETE FROM " + TABLE_NAME +
+                    " WHERE task_id = ? AND " +
+                    "employee_id = ?";
 
     private static final String DELETE_TEMPLATE =
             "DELETE FROM " + TABLE_NAME +
@@ -110,6 +120,28 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
         return taskParticipation;
     }
 
+    public List<TaskParticipation> findByEmployeeId(Long employeeId) throws RepositoryException {
+        List<TaskParticipation> taskParticipation = new ArrayList<>();
+
+        try (Connection connection = connectionGetter.get();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_EMPLOYEE_ID_TEMPLATE)) {
+            statement.setLong(1, employeeId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    TaskParticipation participation = mapResultSetToEntity(resultSet);
+                    taskParticipation.add(participation);
+                }
+            }
+        } catch (SQLException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Ошибка поиска участия в задаче по ID сотрудника: " + e.getMessage());
+
+            throw new RepositoryException(e);
+        }
+
+        return taskParticipation;
+    }
+
     @Override
     public void update(TaskParticipation updatedEntity) throws RepositoryException {
         try (Connection connection = connectionGetter.get();
@@ -135,6 +167,20 @@ public class TaskParticipationRepository implements BaseRepository<Long, TaskPar
             statement.executeUpdate();
         } catch (SQLException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Ошибка удаления участия в задаче по ID: " + e.getMessage());
+
+            throw new RepositoryException(e);
+        }
+    }
+
+    public void deleteByEmployeeAndTaskId(Long employeeId, Long taskId) throws RepositoryException {
+        try (Connection connection = connectionGetter.get();
+             PreparedStatement statement = connection.prepareStatement(CLEAR_TASK_ID_TEMPLATE)) {
+            statement.setLong(1, taskId);
+            statement.setLong(2, employeeId);
+
+            statement.executeUpdate();
+        } catch (SQLException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Ошибка изменения сотрудника по ID: " + e.getMessage());
 
             throw new RepositoryException(e);
         }

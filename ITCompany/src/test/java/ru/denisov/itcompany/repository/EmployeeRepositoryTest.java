@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.denisov.itcompany.entity.Employee;
-import ru.denisov.itcompany.entity.Role;
 import ru.denisov.itcompany.exception.RepositoryException;
 import ru.denisov.itcompany.processing.ConnectionGetter;
 
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -39,13 +39,11 @@ class EmployeeRepositoryTest {
         employee = new Employee(
                 1L,
                 1L,
-                1L,
                 "Иван",
                 "Иванов",
                 LocalDate.of(1990, 1, 1),
                 "ivanov@example.com",
-                "password",
-                Role.USER
+                "password"
         );
 
         employees = new ArrayList<>();
@@ -53,25 +51,21 @@ class EmployeeRepositoryTest {
         employees.add(new Employee(
                 1L,
                 1L,
-                1L,
                 "Иван",
                 "Иванов",
                 LocalDate.of(1990, 1, 1),
                 "ivanov@example.com",
-                "password1",
-                Role.USER)
+                "password1")
         );
 
         employees.add(new Employee(
-                2L,
                 2L,
                 2L,
                 "Петр",
                 "Петров",
                 LocalDate.of(1992, 3, 15),
                 "petrov@example.com",
-                "password2",
-                Role.ADMIN)
+                "password2")
         );
     }
 
@@ -97,10 +91,10 @@ class EmployeeRepositoryTest {
 
         repository.insert(employee);
 
-        verify(statement).setLong(eq(1), eq(1L));
-        verify(statement).setLong(eq(2), eq(1L));
-        verify(statement).setString(eq(3), eq("Иван"));
-        verify(statement).setString(eq(4), eq("Иванов"));
+        verify(statement).setString(eq(1), eq("Иван"));
+        verify(statement).setString(eq(2), eq("Иванов"));
+        verify(statement).setString(eq(4), eq("ivanov@example.com"));
+        verify(statement).setString(eq(5), eq("password"));
 
         verify(statement).executeUpdate();
 
@@ -126,10 +120,6 @@ class EmployeeRepositoryTest {
                 .thenReturn(1L)
                 .thenReturn(2L);
 
-        when(resultSet.getLong("position_id"))
-                .thenReturn(1L)
-                .thenReturn(2L);
-
         when(resultSet.getString("name"))
                 .thenReturn("Иван")
                 .thenReturn("Петр");
@@ -150,10 +140,6 @@ class EmployeeRepositoryTest {
                 .thenReturn("password1")
                 .thenReturn("password2");
 
-        when(resultSet.getString("role"))
-                .thenReturn("USER")
-                .thenReturn("ADMIN");
-
         List<Employee> foundEmployees = repository.findAll();
 
         verify(connection).prepareStatement(anyString());
@@ -166,20 +152,29 @@ class EmployeeRepositoryTest {
     void findById() throws InterruptedException, SQLException {
         Long employeeId = 1L;
 
-        when(connectionGetter.get()).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(statement);
-        when(statement.executeQuery()).thenReturn(resultSet);
+        when(connectionGetter.get())
+                .thenReturn(connection);
+        when(connection.prepareStatement(anyString()))
+                .thenReturn(statement);
+        when(statement.executeQuery())
+                .thenReturn(resultSet);
 
         when(resultSet.next()).thenReturn(true);
-        when(resultSet.getLong("id")).thenReturn(employee.getId());
-        when(resultSet.getLong("project_id")).thenReturn(employee.getProjectId());
-        when(resultSet.getLong("position_id")).thenReturn(employee.getPositionId());
-        when(resultSet.getString("name")).thenReturn(employee.getName());
-        when(resultSet.getString("surname")).thenReturn(employee.getSurname());
-        when(resultSet.getDate("birth_date")).thenReturn(Date.valueOf(employee.getBirthDate()));
-        when(resultSet.getString("email")).thenReturn(employee.getEmail());
-        when(resultSet.getString("password")).thenReturn(employee.getPassword());
-        when(resultSet.getString("role")).thenReturn(employee.getRole().toString());
+
+        when(resultSet.getLong("id"))
+                .thenReturn(employee.getId());
+        when(resultSet.getLong("project_id"))
+                .thenReturn(employee.getProjectId());
+        when(resultSet.getString("name"))
+                .thenReturn(employee.getName());
+        when(resultSet.getString("surname"))
+                .thenReturn(employee.getSurname());
+        when(resultSet.getDate("birth_date"))
+                .thenReturn(Date.valueOf(employee.getBirthDate()));
+        when(resultSet.getString("email"))
+                .thenReturn(employee.getEmail());
+        when(resultSet.getString("password"))
+                .thenReturn(employee.getPassword());
 
         Employee foundEmployee = repository.findById(employeeId);
 
@@ -196,13 +191,11 @@ class EmployeeRepositoryTest {
         Employee updatedEmployee = new Employee(
                 1L,
                 2L,
-                2L,
                 "Иван",
                 "Иванов",
                 LocalDate.of(1990, 1, 1),
                 "ivanov@example.com",
-                "password",
-                Role.USER
+                "password"
         );
 
         when(connectionGetter.get()).thenReturn(connection);
@@ -211,12 +204,10 @@ class EmployeeRepositoryTest {
         repository.update(updatedEmployee);
 
         verify(connection).prepareStatement(anyString());
-        verify(statement).setLong(eq(6), eq(updatedEmployee.getId()));
+        verify(statement).setLong(eq(4), eq(updatedEmployee.getId()));
         verify(statement).setLong(eq(1), eq(updatedEmployee.getProjectId()));
-        verify(statement).setLong(eq(2), eq(updatedEmployee.getPositionId()));
-        verify(statement).setString(eq(3), eq(updatedEmployee.getEmail()));
-        verify(statement).setString(eq(4), eq(updatedEmployee.getPassword()));
-        verify(statement).setString(eq(5), eq(updatedEmployee.getRole().toString()));
+        verify(statement).setString(eq(2), eq(updatedEmployee.getEmail()));
+        verify(statement).setString(eq(3), eq(updatedEmployee.getPassword()));
 
         verify(statement).executeUpdate();
     }
@@ -234,5 +225,63 @@ class EmployeeRepositoryTest {
         verify(statement).setLong(eq(1), eq(employeeId));
 
         verify(statement).executeUpdate();
+    }
+
+    @Test
+    void findByLogin() throws SQLException, RepositoryException, InterruptedException {
+        String login = "ivanov@example.com";
+
+        when(connectionGetter.get()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
+
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getLong("id")).thenReturn(employee.getId());
+        when(resultSet.getLong("project_id")).thenReturn(employee.getProjectId());
+        when(resultSet.getString("name")).thenReturn(employee.getName());
+        when(resultSet.getString("surname")).thenReturn(employee.getSurname());
+        when(resultSet.getDate("birth_date")).thenReturn(Date.valueOf(employee.getBirthDate()));
+        when(resultSet.getString("password")).thenReturn(employee.getPassword());
+
+        Employee foundEmployee = repository.findByLogin(login);
+
+        verify(connection).prepareStatement(anyString());
+        verify(statement).setString(eq(1), eq(login));
+        verify(statement).executeQuery();
+
+        assertEquals(employee, foundEmployee);
+    }
+
+    @Test
+    void deleteProjectId() throws SQLException, InterruptedException, RepositoryException {
+        Long projectId = 1L;
+
+        when(connectionGetter.get()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+
+        repository.deleteProjectId(projectId);
+
+        verify(connection).prepareStatement(anyString());
+        verify(statement).setLong(eq(1), eq(projectId));
+        verify(statement).executeUpdate();
+    }
+
+    @Test
+    void existsByEmail() throws SQLException, InterruptedException, RepositoryException {
+        String email = "ivanov@example.com";
+
+        when(connectionGetter.get()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
+
+        when(resultSet.next()).thenReturn(true);
+
+        boolean exists = repository.existsByEmail(email);
+
+        verify(connection).prepareStatement(anyString());
+        verify(statement).setString(eq(1), eq(email));
+        verify(statement).executeQuery();
+
+        assertTrue(exists);
     }
 }

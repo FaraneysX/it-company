@@ -22,13 +22,13 @@ public class ConnectionGetter {
     private static BlockingQueue<Connection> pool;
 
     static {
-        LOGGER.log(Level.INFO, "Загрузка драйвера базы данных.");
+        LOGGER.log(Level.INFO, "Loading the database driver.");
         loadDriver();
-        LOGGER.log(Level.INFO, "Драйвер базы данных загружен.");
+        LOGGER.log(Level.INFO, "The database driver is loaded.");
 
-        LOGGER.log(Level.INFO, "Инициализация пула соединений.");
+        LOGGER.log(Level.INFO, "Initializing the connection pool.");
         initConnectionPool();
-        LOGGER.log(Level.INFO, "Пул соединений инициализирован.");
+        LOGGER.log(Level.INFO, "The connection pool has been initialized.");
     }
 
     private static void initConnectionPool() {
@@ -37,19 +37,13 @@ public class ConnectionGetter {
         pool = new ArrayBlockingQueue<>(size);
 
         for (int i = 0; i < size; i++) {
-            try (Connection connection = open()) {
-                Connection proxyConnection = (Connection) Proxy.newProxyInstance(
-                        ConnectionGetter.class.getClassLoader(),
-                        new Class[]{Connection.class},
-                        (proxy, method, args) -> "close".equals(method.getName()) ? pool.add((Connection) proxy) : method.invoke(connection, args)
-                );
-
-                pool.add(proxyConnection);
-            } catch (SQLException | RuntimeException e) {
-                LOGGER.log(Level.SEVERE, "Ошибка при инициализации пула соединений: ", e.getMessage());
-
-                throw new RuntimeException(e);
-            }
+            Connection connection = open();
+            Connection proxyConnection = (Connection) Proxy.newProxyInstance(
+                    ConnectionGetter.class.getClassLoader(),
+                    new Class[]{Connection.class},
+                    (proxy, method, args) -> "close".equals(method.getName()) ? pool.add((Connection) proxy) : method.invoke(connection, args)
+            );
+            pool.add(proxyConnection);
         }
     }
 
@@ -57,7 +51,7 @@ public class ConnectionGetter {
         try {
             Class.forName(POSTGRES_DRIVER_NAME);
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Не удалось загрузить PostgreSQL JDBC драйвер: ", e);
+            LOGGER.log(Level.SEVERE, "Failed to load PostgreSQL JDBC driver:", e);
 
             throw new RuntimeException(e);
         }
@@ -71,7 +65,7 @@ public class ConnectionGetter {
                     PropertyUtil.get(PASSWORD_KEY)
             );
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Не удалось подключиться к базе данных: ", e);
+            LOGGER.log(Level.SEVERE, "Failed to connect to database: ", e);
 
             throw new RuntimeException(e);
         }

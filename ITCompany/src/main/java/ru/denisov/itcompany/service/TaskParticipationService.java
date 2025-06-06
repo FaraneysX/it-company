@@ -1,8 +1,11 @@
 package ru.denisov.itcompany.service;
 
 import ru.denisov.itcompany.dto.taskparticipation.controller.TaskParticipationControllerDto;
+import ru.denisov.itcompany.entity.TaskParticipation;
 import ru.denisov.itcompany.mapper.TaskParticipationMapper;
 import ru.denisov.itcompany.repository.TaskParticipationRepository;
+
+import java.util.List;
 
 public class TaskParticipationService {
     private final TaskParticipationRepository repository;
@@ -21,11 +24,19 @@ public class TaskParticipationService {
         return mapper.mapToController(repository.findById(id));
     }
 
+    public List<TaskParticipation> findByEmployeeId(Long id) {
+        return repository.findByEmployeeId(id);
+    }
+
     public void update(TaskParticipationControllerDto controllerDto) {
         repository.update(mapper.mapToEntity(controllerDto));
     }
 
     public void delete(Long id) {
         repository.delete(id);
+    }
+
+    public void delete(Long employeeId, Long taskId) {
+        repository.deleteByEmployeeAndTaskId(employeeId, taskId);
     }
 }
